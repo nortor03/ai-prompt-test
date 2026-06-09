@@ -5,6 +5,7 @@ import { useState } from "react";
 export interface ImageItem {
   id: string;
   name: string;
+  url?: string;
 }
 
 interface Props {
@@ -12,20 +13,6 @@ interface Props {
   onChange: (images: ImageItem[]) => void;
   emptyMessage?: string;
 }
-
-const getImageUrl = (name: string): string => {
-  const lowercase = name.toLowerCase();
-  if (lowercase.includes("road") || lowercase.includes("street") || lowercase.includes("crosswalk")) {
-    return "https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=300&auto=format&fit=crop&q=80";
-  }
-  if (lowercase.includes("drainage") || lowercase.includes("trees") || lowercase.includes("waste") || lowercase.includes("environment") || lowercase.includes("grate") || lowercase.includes("bin")) {
-    return "https://images.unsplash.com/photo-1541888946425-d81bb19240f5?w=300&auto=format&fit=crop&q=80";
-  }
-  if (lowercase.includes("power") || lowercase.includes("lines") || lowercase.includes("hawker") || lowercase.includes("sidewalk") || lowercase.includes("bicycle") || lowercase.includes("obstacle")) {
-    return "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=300&auto=format&fit=crop&q=80";
-  }
-  return "https://images.unsplash.com/photo-1506521788723-868126d5e368?w=300&auto=format&fit=crop&q=80";
-};
 
 export default function DraggableImageList({ images, onChange, emptyMessage = "ไม่มีรูปภาพในรายการ" }: Props) {
   const [dragIndex, setDragIndex] = useState<number | null>(null);
@@ -81,12 +68,17 @@ export default function DraggableImageList({ images, onChange, emptyMessage = "�
             </span>
             
             {/* Thumbnail Image Preview */}
-            <div className="w-24 h-16 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 select-none">
-              <img
-                src={getImageUrl(img.name)}
-                alt={img.name}
-                className="w-full h-full object-cover pointer-events-none"
-              />
+            <div className="w-24 h-16 rounded-xl bg-slate-100 border border-slate-200 overflow-hidden shrink-0 select-none flex items-center justify-center">
+              {img.url ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={img.url}
+                  alt={img.name}
+                  className="w-full h-full object-cover pointer-events-none"
+                />
+              ) : (
+                <span className="text-[9px] text-slate-400 font-mono px-1 text-center truncate">{img.name}</span>
+              )}
             </div>
 
             <p className="text-sm font-medium text-slate-800">{img.name}</p>

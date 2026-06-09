@@ -1,8 +1,10 @@
 "use client";
+
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-export default function Redirect() {
+
+export default function RedirectToEngines() {
   const router = useRouter();
-  useEffect(() => { router.replace("/compare/picture"); }, [router]);
+  useEffect(() => { router.replace("/ai-engines"); }, [router]);
   return null;
 }
