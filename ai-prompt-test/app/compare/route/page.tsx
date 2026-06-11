@@ -5,6 +5,7 @@ import { getEngines, submitJob, getJob, EnginesResponse, Job } from "@/app/lib/a
 import DraggableImageList, { ImageItem } from "@/app/components/DraggableImageList";
 import ImageUploadBar from "@/app/components/ImageUploadBar";
 import CompareResultGrid, { ResultColumn, ImageOption } from "@/app/components/CompareResultGrid";
+import PromptSelect from "@/app/components/PromptSelect";
 import { saveRecords, ensurePersistence } from "@/app/lib/historyStore";
 
 interface UploadedItem {
@@ -28,6 +29,7 @@ export default function CompareRoutePage() {
   const [engines, setEngines] = useState<EnginesResponse | null>(null);
   const [items, setItems] = useState<UploadedItem[]>([]);
   const [combos, setCombos] = useState<Combo[]>([]);
+  const [selectedPromptId, setSelectedPromptId] = useState("");
   const [runningJobs, setRunningJobs] = useState<RunningJob[]>([]);
   const [stage, setStage] = useState<"setup" | "polling" | "done">("setup");
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -117,7 +119,7 @@ export default function CompareRoutePage() {
       // out of memory on large image batches (higher values OOM the worker).
       const jobs = await Promise.all(
         combos.map((combo) =>
-          submitJob(files, { engine: combo.engine, model: combo.model, concurrency: 1 })
+          submitJob(files, { engine: combo.engine, model: combo.model, concurrency: 1, promptId: selectedPromptId })
         )
       );
       // Save the uploaded images to local storage right away (keyed by job),
@@ -247,6 +249,16 @@ export default function CompareRoutePage() {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Prompt */}
+          <div className="space-y-3">
+            <h2 className="text-sm font-bold text-slate-900">เลือก Prompt</h2>
+            <PromptSelect
+              value={selectedPromptId}
+              onChange={setSelectedPromptId}
+              className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-slate-950 focus:ring-1 focus:ring-slate-950 cursor-pointer"
+            />
           </div>
 
           <div className="flex justify-end pt-2">

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { getEngines, submitJob, getJob, EnginesResponse, Job } from "@/app/lib/api";
 import CompareResultGrid, { ResultColumn, ImageOption } from "@/app/components/CompareResultGrid";
+import PromptSelect from "@/app/components/PromptSelect";
 import { logAnalysis } from "@/app/lib/mlflow";
 import { saveRecords, ensurePersistence } from "@/app/lib/historyStore";
 
@@ -23,6 +24,7 @@ export default function ComparePicturePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [combos, setCombos] = useState<Combo[]>([]);
+  const [selectedPromptId, setSelectedPromptId] = useState("");
   const [runningJobs, setRunningJobs] = useState<RunningJob[]>([]);
   const [stage, setStage] = useState<"setup" | "polling" | "done">("setup");
   const [submitting, setSubmitting] = useState(false);
@@ -115,7 +117,9 @@ export default function ComparePicturePage() {
     loggedRef.current = new Set();
     try {
       const jobs = await Promise.all(
-        combos.map((combo) => submitJob([selectedFile], { engine: combo.engine, model: combo.model }))
+        combos.map((combo) =>
+          submitJob([selectedFile], { engine: combo.engine, model: combo.model, promptId: selectedPromptId })
+        )
       );
       // Save the uploaded image to local storage right away so History can show it.
       ensurePersistence();
@@ -226,6 +230,16 @@ export default function ComparePicturePage() {
                 )}
               </div>
             ))}
+          </div>
+
+          {/* Prompt */}
+          <div className="space-y-3">
+            <h2 className="text-sm font-bold text-slate-900">เลือก Prompt</h2>
+            <PromptSelect
+              value={selectedPromptId}
+              onChange={setSelectedPromptId}
+              className="w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:border-slate-950 focus:ring-1 focus:ring-slate-950 cursor-pointer"
+            />
           </div>
 
           <div className="flex justify-end">

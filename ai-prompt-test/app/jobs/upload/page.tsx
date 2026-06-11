@@ -6,6 +6,7 @@ import DraggableImageList, { ImageItem } from "@/app/components/DraggableImageLi
 import ImageUploadBar from "@/app/components/ImageUploadBar";
 import { getEngines, submitJob, EnginesResponse } from "@/app/lib/api";
 import { saveRecords, ensurePersistence } from "@/app/lib/historyStore";
+import PromptSelect from "@/app/components/PromptSelect";
 
 interface UploadedItem {
   file: File;
@@ -18,6 +19,7 @@ export default function NewJobPage() {
   const [engines, setEngines] = useState<EnginesResponse | null>(null);
   const [selectedEngine, setSelectedEngine] = useState("");
   const [selectedModel, setSelectedModel] = useState("");
+  const [selectedPromptId, setSelectedPromptId] = useState("");
   const [items, setItems] = useState<UploadedItem[]>([]);
   const [submitting, setSubmitting] = useState(false);
 
@@ -64,7 +66,7 @@ export default function NewJobPage() {
     try {
       const job = await submitJob(
         items.map((it) => it.file),
-        { engine: selectedEngine, model: selectedModel }
+        { engine: selectedEngine, model: selectedModel, promptId: selectedPromptId }
       );
       // Save uploaded images locally so the job detail + History can show them.
       ensurePersistence();
@@ -131,6 +133,11 @@ export default function NewJobPage() {
               ))}
             </select>
           </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label className="text-xs font-bold uppercase tracking-wider text-slate-500 px-1">Prompt</label>
+          <PromptSelect value={selectedPromptId} onChange={setSelectedPromptId} className={selectClass} />
         </div>
 
         <ImageUploadBar

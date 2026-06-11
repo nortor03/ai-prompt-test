@@ -9,6 +9,7 @@ export default function Sidebar() {
   const mainMenuItems = [
     { name: "AI Engines", path: "/ai-engines" },
     { name: "Analysis Jobs", path: "/jobs" },
+    { name: "Prompts", path: "/prompts" },
   ];
 
   const compareMenuItems = [

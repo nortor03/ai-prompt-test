@@ -93,7 +93,7 @@ export const jobImageUrl = (jobId: string, index: number) =>
 
 export const submitJob = (
   files: File[],
-  options?: { engine?: string; model?: string; concurrency?: number; prompt?: string }
+  options?: { engine?: string; model?: string; concurrency?: number; promptId?: string }
 ): Promise<Job> => {
   const form = new FormData();
   files.forEach((f) => form.append("files", f));
@@ -101,7 +101,7 @@ export const submitJob = (
   if (options?.model) form.append("model", options.model);
   if (options?.concurrency !== undefined)
     form.append("concurrency", String(options.concurrency));
-  if (options?.prompt) form.append("prompt", options.prompt);
+  if (options?.promptId) form.append("prompt_id", options.promptId);
   return fetch(`${BASE}/api/jobs/images`, { method: "POST", body: form }).then(
     async (r) => {
       if (!r.ok) {
@@ -134,17 +134,59 @@ export const retryJob = (
   );
 };
 
+// ── Prompts ───────────────────────────────────────────────
+
+export interface Prompt {
+  id: string;
+  name: string;
+  text: string;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface PromptListResponse {
+  prompts: Prompt[];
+  total: number;
+}
+
+export const getPrompts = () => request<PromptListResponse>("/api/prompts");
+
+export const getPrompt = (id: string) => request<Prompt>(`/api/prompts/${id}`);
+
+export const createPrompt = (data: { name: string; text: string }) =>
+  request<Prompt>("/api/prompts", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+
+export const updatePrompt = (
+  id: string,
+  data: { name?: string; text?: string }
+) =>
+  request<Prompt>(`/api/prompts/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(data),
+  });
+
+export const deletePrompt = (id: string) =>
+  fetch(`${BASE}/api/prompts/${id}`, { method: "DELETE" }).then(async (r) => {
+    if (!r.ok) {
+      const t = await r.text();
+      throw new Error(t || r.statusText);
+    }
+  });
+
 // ── Single image analysis ─────────────────────────────────
 
 export const analyzeImage = (
   file: File,
-  options?: { engine?: string; model?: string; prompt?: string }
+  options?: { engine?: string; model?: string; promptId?: string }
 ): Promise<Record<string, unknown>> => {
   const form = new FormData();
   form.append("file", file);
   if (options?.engine) form.append("engine", options.engine);
   if (options?.model) form.append("model", options.model);
-  if (options?.prompt) form.append("prompt", options.prompt);
+  if (options?.promptId) form.append("prompt_id", options.promptId);
   return fetch(`${BASE}/api/analyze`, { method: "POST", body: form }).then(
     async (r) => {
       if (!r.ok) {
