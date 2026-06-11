@@ -22,8 +22,8 @@ export default function NewPromptPage() {
       <PromptForm
         submitLabel="สร้าง Prompt"
         onSubmit={async (values) => {
-          const created = await createPrompt(values);
-          router.push(`/prompts/${created.id}`);
+          await createPrompt(values);
+          router.push("/prompts");
         }}
       />
 

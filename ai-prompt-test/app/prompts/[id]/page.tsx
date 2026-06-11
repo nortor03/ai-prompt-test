@@ -21,7 +21,6 @@ export default function EditPromptPage() {
   const [prompt, setPrompt] = useState<Prompt | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [saved, setSaved] = useState(false);
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
@@ -76,21 +75,14 @@ export default function EditPromptPage() {
       ) : error ? (
         <p className="text-sm text-red-500 px-2">{error}</p>
       ) : prompt ? (
-        <>
-          {saved && (
-            <p className="text-sm text-green-600 px-1 mb-4">บันทึกเรียบร้อยแล้ว ✓</p>
-          )}
-          <PromptForm
-            initial={{ name: prompt.name, text: prompt.text }}
-            submitLabel="บันทึกการแก้ไข"
-            onSubmit={async (values) => {
-              const updated = await updatePrompt(id, values);
-              setPrompt(updated);
-              setSaved(true);
-              setTimeout(() => setSaved(false), 3000);
-            }}
-          />
-        </>
+        <PromptForm
+          initial={{ name: prompt.name, text: prompt.text }}
+          submitLabel="บันทึกการแก้ไข"
+          onSubmit={async (values) => {
+            await updatePrompt(id, values);
+            router.push("/prompts");
+          }}
+        />
       ) : null}
 
     </div>
