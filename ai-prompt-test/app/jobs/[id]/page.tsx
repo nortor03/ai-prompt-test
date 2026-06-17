@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { getJob, retryJob, deleteJob, Job } from "@/app/lib/api";
 import { logAnalysis } from "@/app/lib/mlflow";
 import { getRecordImage } from "@/app/lib/historyStore";
+import { getStorageRecords, saveAnalysisRecord } from "@/app/lib/storage";
 
 function StatusBadge({ status }: { status: Job["status"] }) {
   const styles: Record<string, string> = {
@@ -109,6 +110,7 @@ export default function JobDetailPage() {
   const [deleting, setDeleting] = useState(false);
   const [imageUrls, setImageUrls] = useState<Record<number, string>>({});
   const loggedRef = useRef(false);
+  const savedRef = useRef(false);
 
   useEffect(() => {
     getJob(jobId).then(setJob).finally(() => setLoading(false));
@@ -160,6 +162,34 @@ export default function JobDetailPage() {
       });
     }
   }, [job?.status]);
+
+  // On completion, persist each image + its analysis to the storage service.
+  // Idempotent: skips if this job's records already exist there.
+  useEffect(() => {
+    if (job?.status !== "done" || !job.results || savedRef.current) return;
+    savedRef.current = true;
+    const results = job.results;
+    (async () => {
+      try {
+        const existing = await getStorageRecords({ source: jobId, limit: 1 });
+        if (existing.total > 0) return;
+        for (const r of results) {
+          const blob = await getRecordImage(`${jobId}:${r.index}`);
+          if (!blob) continue; // no local image bytes — nothing to upload
+          await saveAnalysisRecord({
+            blob,
+            filename: r.filename,
+            analysis: r.analysis,
+            engine: job.engine,
+            model: job.model,
+            source: jobId,
+          });
+        }
+      } catch {
+        savedRef.current = false; // allow a later retry if the service was down
+      }
+    })();
+  }, [job?.status, jobId, job?.results, job?.engine, job?.model]);
 
   const handleRetry = async () => {
     setRetrying(true);

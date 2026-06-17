@@ -10,6 +10,7 @@ export default function Sidebar() {
     { name: "AI Engines", path: "/ai-engines" },
     { name: "Analysis Jobs", path: "/jobs" },
     { name: "Prompts", path: "/prompts" },
+    { name: "Storage", path: "/storage" },
   ];
 
   const compareMenuItems = [
